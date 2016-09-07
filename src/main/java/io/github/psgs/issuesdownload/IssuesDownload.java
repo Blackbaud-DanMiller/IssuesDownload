@@ -1,10 +1,7 @@
 package io.github.psgs.issuesdownload;
 
 import io.github.psgs.issuesdownload.gui.GUI;
-import org.kohsuke.github.GHIssue;
-import org.kohsuke.github.GHIssueState;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
+import org.kohsuke.github.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,15 +27,16 @@ public class IssuesDownload {
             GHRepository repository = github.getUser(repoInfo[0]).getRepository(repoInfo[1]);
 
             FileWriter writer = new FileWriter("issues.csv");
-            writer.append("Id, Title, Creator, Assignee, Milestone, State, Body Text");
+            writer.append("Id, URL, Title, Creator, Assignee, Milestone, State, Labels");
             writer.append("\n");
 
             for (GHIssue issue : repository.getIssues(issueState)) {
                 writer.append(String.valueOf(issue.getNumber()) + ",");
+                writer.append("http://github.com/" + repoInfo[0] + "/" + repoInfo[1] + "/issues/" + String.valueOf(issue.getNumber()) + ",");
                 writer.append(issue.getTitle() + ",");
                 writer.append(issue.getUser().getLogin() + ",");
                 if (issue.getAssignee() != null) {
-                    writer.append(issue.getAssignee().getName() + ",");
+                    writer.append(issue.getAssignee().getLogin() + ",");
                 } else {
                     writer.append(" ,");
                 }
@@ -48,7 +46,12 @@ public class IssuesDownload {
                     writer.append(" ,");
                 }
                 writer.append(issue.getState() + ",");
-                writer.append(issue.getBody() + ",");
+
+                for (org.kohsuke.github.GHLabel label : issue.getLabels()) {
+                    writer.append(label.getName() + " ");
+                }
+
+                //writer.append(issue.getBody() + ",");
                 writer.append("\n");
             }
             writer.flush();
